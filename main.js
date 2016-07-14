@@ -1,22 +1,33 @@
 var Numbers = require('./numbers');
 var NumbersWrite = require('./numbersWrite');
+var NumbersTrans = require('./numbersTrans');
 
 var oneToHund = new Numbers();
 var numbersStore = new NumbersWrite('numbersWrite1');
 
-//Print Out Numbers READ//
+//Print Strings || UTF8
+var printStrings;
+if(process.argv[2] === 'string')
+	printStrings = true;
+else
+	printStrings = false;
+
+//READ Stream//
 oneToHund.on('data', function(chunk){
-	//console.log(chunk.toString());
-	console.log(chunk);
+	if(printStrings) console.log(chunk.toString());
+	if(!printStrings) console.log(chunk);
 });
 
-//Print Out Numbers WRITE//
-oneToHund.pipe(numbersStore);
+//TRANSFORM Stream//
+var timesTwo = new NumbersTrans();
+oneToHund.pipe(timesTwo)
+		 .pipe(numbersStore);
 
+//WRITE Stream//
 numbersStore.on('finish', function(){
 	console.log('numbersStore:');
 	for(var key in NumbersWrite.store){
-		//console.log('\t',key, ':', NumbersWrite.store[key].toString());
-		console.log('\t',key, ':', NumbersWrite.store[key]);
+		if(printStrings)  console.log('\t',key, ':', NumbersWrite.store[key].toString());
+		if(!printStrings)  console.log('\t',key, ':', NumbersWrite.store[key]);
 	}
 });
